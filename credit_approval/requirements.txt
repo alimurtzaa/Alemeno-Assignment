@@ -1,0 +1,9 @@
+Django>=4.2
+djangorestframework
+psycopg2-binary
+pandas
+openpyxl
+celery
+redis
+django-celery-results
+dj_database_url

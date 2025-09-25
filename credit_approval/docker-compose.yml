@@ -1,0 +1,25 @@
+services:
+  web:
+    build: .
+    command: >
+      sh -c "ls -la /app && 
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://alemeno_assignment_user:Zfj2SzqjmJaxKpSi83WmjWWXGvy77m4L@dpg-d3afn12dbo4c738pt5tg-a.oregon-postgres.render.com/alemeno_assignment
+      - REDIS_URL=redis://default:uExyKPBKfKWCmWXDwhXNcMOnvhyOJaAV@monorail.proxy.rlwy.net:28755/0
+      - DJANGO_SETTINGS_MODULE=credit_approval.settings
+
+  celery:
+    build: .
+    command: celery -A credit_approval.celery worker --loglevel=info --pool=solo
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql://alemeno_assignment_user:Zfj2SzqjmJaxKpSi83WmjWWXGvy77m4L@dpg-d3afn12dbo4c738pt5tg-a.oregon-postgres.render.com/alemeno_assignment
+      - REDIS_URL=redis://default:uExyKPBKfKWCmWXDwhXNcMOnvhyOJaAV@monorail.proxy.rlwy.net:28755/0
+      - DJANGO_SETTINGS_MODULE=credit_approval.settings
