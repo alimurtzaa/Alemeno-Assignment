@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -83,16 +84,23 @@ WSGI_APPLICATION = 'credit_approval.wsgi.application'
 #     }
 # }
 
-import dj_database_url
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default="postgresql://alemeno_assignment_user:Zfj2SzqjmJaxKpSi83WmjWWXGvy77m4L@dpg-d3afn12dbo4c738pt5tg-a.oregon-postgres.render.com/alemeno_assignment",
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
 
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL)
+    }
+else:
+    # Fallback to SQLite for local development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -137,6 +145,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CELERY_BROKER_URL = 'redis://default:uExyKPBKfKWCmWXDwhXNcMOnvhyOJaAV@monorail.proxy.rlwy.net:28755/0'
-CELERY_RESULT_BACKEND = 'redis://default:uExyKPBKfKWCmWXDwhXNcMOnvhyOJaAV@monorail.proxy.rlwy.net:28755/0'  # if using django-celery-results
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+
+if REDIS_URL:
+    CELERY_BROKER_URL = REDIS_URL
+    CELERY_RESULT_BACKEND = REDIS_URL
+else:
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 INSTALLED_APPS += ["django_celery_results"]
+
